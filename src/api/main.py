@@ -18,24 +18,29 @@ app = FastAPI(
     description="Multi-Agent Supply Chain Investigation Platform"
 )
 
-workflow = SupplyChainWorkflow()
-
 @app.get("/")
 def home():
     return {
         "message":"Enterprise GenAI Supply Chain Risk Intelligence Assistant"
     }
+    
 
-@app.post("/chat",response_model=ChatResponse)
-def chat(request:ChatRequest,x_api_key : str=Header(...)):
+@app.post("/chat", response_model=ChatResponse)
+def chat(request: ChatRequest,
+         x_api_key: str = Header(...)):
     try:
         verify_api_key(x_api_key)
+
+        workflow = SupplyChainWorkflow()
+
         result = workflow.execute(request.query)
+
         return ChatResponse(
             documents=result.documents,
             risks=result.risks,
             recommendations=result.recommendations,
             report=result.report
         )
+
     except Exception as e:
         raise HTTPException(status_code=500,detail=str(e))
