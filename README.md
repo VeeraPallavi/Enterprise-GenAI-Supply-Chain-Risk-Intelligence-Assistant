@@ -49,40 +49,53 @@ This project leverages Retrieval-Augmented Generation (RAG), Large Language Mode
 ## Architecture
 
 ```text
-User Query
-     │
-     ▼
-FastAPI API Layer
-     │
-     ▼
-SupplyChainWorkflow
-     │
- ┌───┼─────────────────────┐
- │   │                     │
- ▼   ▼                     ▼
-Retrieval Agent      Risk Agent
-                           │
-                           ▼
-                Recommendation Agent
-                           │
-                           ▼
-                    Reporting Agent
-                           │
-                           ▼
-                 Executive Investigation Report
+Supply Chain Manager
+        │
+        ▼
+Streamlit Frontend
+(User Interface)
+        │
+        │ HTTP/HTTPS
+        ▼
+FastAPI Backend
+(API Layer)
+        │
+        ▼
+Orchestrator Agent
+        │
+ ┌──────┼──────────────────────────┐
+ │      │            │             │
+ ▼      ▼            ▼             ▼
+Retrieval Agent   Risk Agent   Recommendation Agent   Reporting Agent
+      │                 │               │                    │
+      └─────────────────┴───────────────┴────────────────────┘
+                                  │
+                                  ▼
+                              Groq LLM
+                                  │
+                                  ▼
+                          Executive Report
+                                  │
+                                  ▼
+                            Final Response
 ```
 
 ---
 
-
 ## Project Structure
 
 ```text
-Supply-Chain-Assistant/
+Supply-Chain-Risk-Assistant/
 │
-├── data/
-│   ├── orders.csv
-│   └── inventory.csv
+├── frontend/
+│   └── app.py
+│
+├── Architecture/
+│   └── Supply_Chain_Assistant_Architecture.png
+│
+├── datasets/
+│   ├── aws_inventory_logistics_raw.csv
+│   └── aws_supply_chain_orders_raw.csv
 │
 ├── vector_db/
 │   ├── faiss.index
@@ -95,26 +108,29 @@ Supply-Chain-Assistant/
 │   │   ├── recommendation_agent.py
 │   │   └── reporting_agent.py
 │   │
-|   ├── llm/
-|   |   ├── groq_client.py
-|   |
+│   ├── api/
+│   │   └── main.py
+│   │
+│   ├── llm/
+│   │   └── groq_client.py
+│   │
+│   ├── models/
+│   │   └── api_models.py
+│   │
+│   ├── orchestration/
+│   │   ├── agents.py
+│   │   ├── models.py
+│   │   └── pydantic_orchestrator.py
+│   │
 │   ├── rag/
-|   |   ├── data_loader.py
-|   |   ├── document_builder.py
+│   │   ├── data_loader.py
+│   │   ├── document_builder.py
 │   │   ├── embeddings.py
 │   │   ├── retriever.py
 │   │   └── vector_store.py
 │   │
-│   ├── orchestration/
-│   │   ├── models.py
-|   |   ├── agents.py
-│   │   └── pydantic_orchestrator.py
-│   │
-│   ├── api/
-│   │   └── main.py
-│   │
-│   └── models/
-│       └── api_models.py
+│   └── utils/
+│       └── query_utils.py
 │
 ├── main.py
 ├── requirements.txt
@@ -124,14 +140,29 @@ Supply-Chain-Assistant/
 
 ---
 
+## Technology Stack
+
+- Python
+- FastAPI
+- Streamlit
+- FAISS Vector Database
+- Sentence Transformers
+- Groq LLM
+- Pydantic AI
+- Retrieval-Augmented Generation (RAG)
+- Multi-Agent Systems
+- Railway Cloud Deployment
+
+---
+
 ## Installation
 
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/your-username/supply-chain-risk-intelligence-assistant.git
+git clone https://github.com/your-username/Supply-Chain-Risk-Assistant.git
 
-cd supply-chain-risk-intelligence-assistant
+cd Supply-Chain-Risk-Assistant
 ```
 
 ### 2. Create Virtual Environment
@@ -170,7 +201,7 @@ pip install -r requirements.txt
 Create a `.env` file in the project root.
 
 ```env
-GROQ_API=your_groq_api_key
+GROQ_API_KEY=your_groq_api_key
 API_KEY=your_api_key
 ```
 
@@ -217,15 +248,13 @@ Which orders got delayed?
 
 ---
 
-## Running FastAPI
-
-Start FastAPI server:
+## Running FastAPI Backend
 
 ```bash
 uvicorn src.api.main:app --reload
 ```
 
-Server URL:
+Backend URL:
 
 ```text
 http://127.0.0.1:8000
@@ -239,6 +268,36 @@ http://127.0.0.1:8000/docs
 
 ---
 
+## Running Streamlit Frontend
+
+```bash
+streamlit run frontend/app.py
+```
+
+Frontend URL:
+
+```text
+http://localhost:8501
+```
+
+---
+
+## Deployment Details
+
+### Frontend Application (Streamlit)
+
+```text
+https://supply-chain-risk-assistant-production-2856.up.railway.app/
+```
+
+### API Documentation (Swagger UI)
+
+```text
+https://supply-chain-risk-assistant-production.up.railway.app/docs
+```
+
+---
+
 ## Guardrails Implemented
 
 ### Grounding Guardrail
@@ -247,7 +306,7 @@ http://127.0.0.1:8000/docs
 
 ### Business Rule Guardrail
 
-- Inventory replenishment is recommended only when:
+Inventory replenishment is recommended only when:
 
 ```text
 Stock Level < Reorder Level
@@ -272,9 +331,9 @@ Every response contains:
 
 - Investigation History Storage
 - Risk Severity Scoring
-- Streamlit Dashboard
 - Hybrid Search (BM25 + Vector Search)
 - JWT Authentication
 - Monitoring and Logging
-
----
+- Docker Containerization
+- CI/CD Pipeline using GitHub Actions
+- Role-Based Access Control (RBAC)
